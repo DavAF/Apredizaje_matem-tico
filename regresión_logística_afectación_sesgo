@@ -1,0 +1,29 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+def sigmoid(z):
+    print(1 / (1 + np.exp(-z)))
+    return 1 / (1 + np.exp(-z))
+
+# Rango de valores de entrada
+X = np.linspace(-5, 5, 100)
+# Peso fijo
+beta = 2.0
+
+# Dos casos: sin sesgo y con sesgo
+z_sin_sesgo = beta * X              # beta_0 = 0
+z_con_sesgo = -2 + beta * X         # beta_0 = -2
+
+# Aplicamos la sigmoide
+p_sin_sesgo = sigmoid(z_sin_sesgo)
+p_con_sesgo = sigmoid(z_con_sesgo)
+
+# Graficamos
+plt.plot(X, p_sin_sesgo, label='Sin sesgo (beta₀ = 0)', linestyle='--')
+plt.plot(X, p_con_sesgo, label='Con sesgo (beta₀ = -2)', linestyle='-')
+plt.xlabel('Entrada X')
+plt.ylabel('Probabilidad')
+plt.title('Efecto del sesgo en la función sigmoide')
+plt.legend()
+plt.grid(True)
+plt.show()
