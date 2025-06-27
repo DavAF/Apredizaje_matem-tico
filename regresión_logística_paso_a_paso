@@ -1,0 +1,124 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Paso 1: Datos simulados (ingreso, edad) y etiquetas (compra: 0 o 1)
+X = np.array([
+    [3000, 22],
+    [4500, 30],
+    [6000, 40]
+], dtype=float)
+y = np.array([0, 0, 1])
+
+# Paso 2: Normalizar (media 0, varianza 1)
+X_mean = X.mean(axis=0)
+X_std = X.std(axis=0)
+X_norm = (X - X_mean) / X_std
+
+# Paso 3: Inicializar parámetros
+beta_0 = 0.0
+beta = np.zeros(X.shape[1])  # [beta_1, beta_2]
+learning_rate = 0.1
+epochs = 30
+
+# Para guardar historia de entrenamiento
+history = {
+    "epoch": [],
+    "beta_0": [],
+    "beta_1": [],
+    "beta_2": [],
+    "loss": []
+}
+
+# Función sigmoide
+def sigmoid(z):
+    return 1 / (1 + np.exp(-z))
+
+# Predicción
+def predict(X, beta_0, beta):
+    z = beta_0 + np.dot(X, beta)
+    return sigmoid(z)
+
+# Pérdida logarítmica (log-loss)
+def compute_loss(p, y):
+    epsilon = 1e-10  # evitar log(0)
+    return -np.mean(y * np.log(p + epsilon) + (1 - y) * np.log(1 - p + epsilon))
+
+# Entrenamiento
+for epoch in range(1, epochs + 1):
+    p = predict(X_norm, beta_0, beta)
+    error = p - y
+
+    # Gradientes
+    db0 = np.mean(error)
+    db = np.dot(error, X_norm) / len(X)
+
+    # Actualización
+    beta_0 -= learning_rate * db0
+    beta -= learning_rate * db
+
+    # Pérdida
+    loss = compute_loss(p, y)
+
+    # Guardar resultados
+    history["epoch"].append(epoch)
+    history["beta_0"].append(beta_0)
+    history["beta_1"].append(beta[0])
+    history["beta_2"].append(beta[1])
+    history["loss"].append(loss)
+
+# Graficar evolución
+fig, ax = plt.subplots(2, 1, figsize=(10, 8), sharex=True)
+
+# Coeficientes
+ax[0].plot(history["epoch"], history["beta_0"], label="β₀ (intercepto)")
+ax[0].plot(history["epoch"], history["beta_1"], label="β₁ (ingreso)")
+ax[0].plot(history["epoch"], history["beta_2"], label="β₂ (edad)")
+ax[0].set_ylabel("Valor del coeficiente")
+ax[0].set_title("Evolución de coeficientes durante el entrenamiento")
+ax[0].legend()
+
+# Pérdida
+ax[1].plot(history["epoch"], history["loss"], color="black", label="Pérdida (log-loss)")
+ax[1].set_xlabel("Época")
+ax[1].set_ylabel("Pérdida")
+ax[1].set_title("Disminución de la pérdida")
+ax[1].legend()
+
+plt.tight_layout()
+plt.show()
+
+# Mostrar coeficientes finales después del entrenamiento
+print("\n🔎 Coeficientes finales después del entrenamiento:")
+print(f"β₀ (intercepto): {beta_0:.5f}")
+print(f"β₁ (ingreso):    {beta[0]:.5f}")
+print(f"β₂ (edad):       {beta[1]:.5f}")
+
+# ➕ NUEVA PREDICCIÓN
+
+# Paso 1: Ingreso y edad de una nueva persona
+nuevo_ingreso = 5200
+nueva_edad = 35
+
+# Paso 2: Normalizar con los mismos valores usados en el entrenamiento
+x_nuevo_norm = np.array([
+    (nuevo_ingreso - X_mean[0]) / X_std[0],
+    (nueva_edad   - X_mean[1]) / X_std[1]
+])
+
+# Paso 3: Calcular z y aplicar sigmoide
+z = beta_0 + np.dot(x_nuevo_norm, beta)
+p = 1 / (1 + np.exp(-z))
+
+# Paso 4: Mostrar resultados
+print("\n📊 Predicción para nueva persona:")
+print(f"Ingreso: {nuevo_ingreso}, Edad: {nueva_edad}")
+print(f"z = {z:.5f}")
+print(f"Probabilidad de que compre (p): {p:.4f}")
+
+# Interpretación simple
+if p >= 0.5:
+    print("➡️ El modelo predice que SÍ comprará.")
+else:
+    print("➡️ El modelo predice que NO comprará.")
+
+
